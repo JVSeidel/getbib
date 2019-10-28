@@ -1,9 +1,45 @@
-import requests
-from bs4 import BeautifulSoup as BS
-import time
+try:
+    import requests
+    from bs4 import BeautifulSoup as BS
+except:
+    print('Make sure that the following packages are installed:')
+    print('requests')
+    print('bs4')
 import sys
 import pdb
 import os.path as path
+
+
+#==================================================================
+#             T H E   D O C U M E N T A T I O N
+#==================================================================
+#This script is a quick-hand way to query the ads system for
+#bibtex references.
+#It is called from the command line outside of python as:
+#python3 getbib.py [authorname] [startyear] [endyear] [optional: path to bibfile (bib.bib by default)]
+#Example:
+#python3 getbib.py Hoeijmakers 2003 2021 ~/Documents/paper/references.bib
+#The script understands initials in a similar way as the ADS query system does, as follows:
+#python3 getbib.py Hoeijmakers,H.J. 2003 2031 ~/Documents/paper/references.bib
+
+#These examples will query the ads for all references with Hoeijmakers as first author,
+#between the years 2003 and 2021.
+
+#The script will return all the references found, and allow the user to select one
+#or multiple references (separated by comma's), which are to be added to the specified
+#(or default) bib file.
+#The script will then query ads for the bibtex reference text, and parse it into the
+#bibfile, while changing the name to [surname][year] (e.g. Hoeijmakers2018).
+#If a bibfile with the specified name already exists, the program checks whether
+#a bibtex reference it is trying to add is already in the bib file. In that case,
+#it will append a lower-case letter to the name of the reference, stating with b.
+#e.g. Hoeijmakers2018 would become Hoeijmakers2018b.
+
+#If this way of returning references is every altered by ADS, this code will probably fail
+#to parse the html table (see below) properly.
+#==================================================================
+
+
 
 
 def input_error():
@@ -15,11 +51,12 @@ def input_error():
     print('      >>>python3 getbib.py Hoeijmakers 2003 2021 ~/Documents/paper/references.bib')
     sys.exit()
 
-if len(sys.argv) < 4:
+#First we check the input for completeness:
+if len(sys.argv) < 4 :
     print('Input error: Insufficient arguments provided.')
     input_error()
 
-surname = sys.argv[1].capitalize()
+surname = sys.argv[1].capitalize().replace(',','%2C+')
 startyear = sys.argv[2]
 endyear = sys.argv[3]
 
@@ -35,7 +72,7 @@ else:
 
 
 
-
+#Then we start constructing the URL needed to access ADS.
 root = 'http://adsabs.net/cgi-bin/nph-abs_connect?db_key=AST&aut_logic=OR&'
 author = 'author=%5E'+surname
 start = '&start_mon=&start_year='+str(startyear)
@@ -44,27 +81,25 @@ tail = '&ttl_logic=OR&title=&txt_logic=OR&text=&nr_to_return=2000&start_nr=1&sor
 
 url = root + author + start + end + tail
 
-
+#Execute the actual query.
 ads_html = BS(requests.get(url).content,'html.parser')
-rows = ads_html.find_all('tr')
-
-#This is where the output of the reading of the table is parsed into.
+#THe result is a massive html table. The following searches it for the relevant information:
+rows = ads_html.find_all('tr')#First, select all table rows.
+#This is where the output of the reading of the table will parsed into.
 bibcode_list = []
 authors_list = []
 titles_list = []
 dates_list = []
-for i in range(len(rows)):
-    box = rows[i].find('input',attrs={'type':'checkbox'})
+for i in range(len(rows)):#Loop through all the rows...
+    box = rows[i].find('input',attrs={'type':'checkbox'})#...each reference has a checkbox that can be used as an identifier.
     if box is not None:
         #If a checkbox has been found, I know that the next line of the table contain the information that I need.
         bibcode_list.append(box['value'])
-        infofields1 = rows[i].find_all('td')
+        infofields1 = rows[i].find_all('td')#We need to find field 4 in this row for the month/year of the reference.
         dates_list.append(infofields1[3].text)
         infofields2 = rows[i+1].find_all('td')
-        authors_list.append(infofields2[1].text)
+        authors_list.append(infofields2[1].text)#We need to find fields 2 and 3 in the next row to find the authors and the paper title.
         titles_list.append(infofields2[2].text)
-
-
 print('')
 print('')
 if len(bibcode_list) == 0:
@@ -72,27 +107,26 @@ if len(bibcode_list) == 0:
     sys.exit()
 
 
-#Below we do all the output.
+#Now we start to handle the output that is printed to screen for the user to be able
+#to make a decision what reference(s) to add.
 for i in range(len(bibcode_list)):
-    authors = authors_list[i].split(';')
+    authors = authors_list[i].split(';')#ADS separates authors by ;. Convenient.
     outstring = ''
-    for j in range(min([3,len(authors)])):
+    for j in range(min([3,len(authors)])):#Print up to three co-authors.
         outstring+=authors[j]+';'
-
     print(str(i)+')    '+dates_list[i]+'    '+outstring[0:-2]+' et al.')
+    #the 0:-2 indexing is to get rid of the last trailing ; that was added, and replace it with et al.
     print('       '+titles_list[i])
-    # print('       '+bibcode_list[i])
     print('')
-
-
 print("Which reference do you want? q for cancel.")
-input = input("Separate more than one number with a comma.\n").split(',')
-if input == 'q':
+input = input("Separate more than one number with a comma.\n").split(',')#This is split on the , to deal with a sequence of numbers.
+#It also works if only one number is provided.
+if input[0] == 'q':
     sys.exit()
 
-#First do the checks on the input...
+#To proceed, we first do checks on the input...
 for number in input:
-    if number.isdigit() == False:
+    if number.isdigit() == False:#Is it a number?
         print('Error, please provide only numbers. Exiting.')
         sys.exit()
     if int(number) >= len(bibcode_list):
@@ -100,21 +134,30 @@ for number in input:
         sys.exit()
 #...Then the actual functionality.
 for number in input:
-    target_ref_name = surname+dates_list[int(number)].split('/')[-1]
+    target_ref_name = surname.split('%2C+')[0]+dates_list[int(number)].split('/')[-1]
     bibcode = bibcode_list[int(number)]#'2019A&A...627A.165H'
     bibtex_root = 'http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode='
     bibtex_tail = '&data_type=BIBTEX'
     bibtex_url = bibtex_root+bibcode+bibtex_tail
-    bibtext = BS(requests.get(bibtex_url).content,'html.parser').prettify()
-    #This is a string.
+    bibtext = BS(requests.get(bibtex_url).content,'html.parser').prettify()#This is a big string wth line breaks.
+
     art_key = '@ARTICLE{'
     try:
         art_i = bibtext.index(art_key)#Search for where @ARTICLE STARTS. This is the start of our reference.
     except:
-        art_key = '@INPROCEEDINGS{'
-        art_i = bibtext.index(art_key)
+        try:
+            art_key = '@INPROCEEDINGS{'
+            art_i = bibtext.index(art_key)
+        except:
+            try:
+                art_key = '@MISC{'
+                art_i = bibtext.index(art_key)
+            except:
+                print("Error: The reference you are trying to add is not an ARTICLE,")
+                print("INPROCEEDINGS OR MISC. Sorry, you need to add it manually.")
+                sys.exit()
     ref_name = bibtext[art_i:-1].replace(art_key,'').split(',')[0]#Split before the first comma and remove the @ARTICLE{
-    #to retrieve the name of the reference.
+    #to retrieve the current name of the reference. Which can be garbled, and which we dont want to use in LaTeX.
     suffix=['','b','c','d','e','f','g','h','i','j','k']#These are the possible suffixes that can be added to the reference to distinguish it from
     #duplicate references, e.g. Hoeijmakers2018 exists? Then we add Hoeijmakers2018b.
     #The first one is reserved for the existing reference. Hoeijmakers2018a is never added by this program.
@@ -127,8 +170,8 @@ for number in input:
             content=fp.readlines()
         i=0
         outname=target_ref_name+suffix[i]
-        bibtext_out = bibtext[art_i:-1].replace(ref_name,outname)
-        #The following block tests if the reference already exists, and if so, appends a suffix.
+        bibtext_out = bibtext[art_i:-1].replace(ref_name,outname)#Swap the garbled name for the intelligble name.
+        #The following block tests if the reference already exists, and if so, swaps for a suffixed-version of the name instead.
         while art_key+outname+',\n' in content:
             print('   '+outname+' already existed.')
             i+=1
@@ -144,15 +187,10 @@ for number in input:
             fp.write(bibtext_out)
             fp.write('\n')
         print('Added reference '+outname+' to '+outbib)
-    else:
+    else:#else, if the file didn't exist:
         bibtext_out = bibtext[art_i:-1].replace(ref_name,target_ref_name)
         with open(outbib,'w') as fp:
             fp.write('\n')
             fp.write(bibtext_out)
             fp.write('\n')
         print('Created new '+outbib+' file and added '+target_ref_name)
-
-
-#TO ADD:
-#THE ABILITY TO DEAL WITH MULTIPLE REFERENCES AT ONCE.
-#THE ABILITY TO ADD INITIALS.
