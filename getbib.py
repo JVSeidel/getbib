@@ -151,6 +151,7 @@ else:
         fp.write('\n')
     print('Created new '+outbib+' file and added '+target_ref_name)
 
+print('Finished')
 
 #TO ADD:
 #THE ABILITY TO DEAL WITH MULTIPLE REFERENCES AT ONCE.
