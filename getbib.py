@@ -85,73 +85,73 @@ for i in range(len(bibcode_list)):
     print('')
 
 
-
-number = input("Which reference do you want? q for cancel. ")
-if number == 'q':
-    sys.exit()
-if number.isdigit() == False:
-    print('Error, please type a number.')
+print("Which reference do you want? q for cancel.")
+input = input("Separate more than one number with a comma.\n").split(',')
+if input == 'q':
     sys.exit()
 
-target_ref_name = surname+dates_list[int(number)].split('/')[-1]
-bibcode = bibcode_list[int(number)]#'2019A&A...627A.165H'
-bibtex_root = 'http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode='
-bibtex_tail = '&data_type=BIBTEX'
-bibtex_url = bibtex_root+bibcode+bibtex_tail
-bibtext = BS(requests.get(bibtex_url).content,'html.parser').prettify()
-#This is a string.
-
-art_key = '@ARTICLE{'
-art_i = bibtext.index(art_key)#Search for where @ARTICLE STARTS. This is the start of our reference.
-# print('')
-# print('')
-# print(bibtext[art_i:-1])#This is the entire remainder of the file produced by ADS.
-# print('')
-print(target_ref_name)
-ref_name = bibtext[art_i:-1].replace('@ARTICLE{','').split(',')[0]#Split before the first comma and remove the @ARTICLE{
-#to retrieve the name of the reference.
-
-suffix=['','b','c','d','e','f','g','h','i','j','k']#These are the possible suffixes that can be added to the reference to distinguish it from
-#duplicate references, e.g. Hoeijmakers2018 exists? Then we add Hoeijmakers2018b.
-#The first one is reserved for the existing reference. Hoeijmakers2018a is never added by this program.
-#It either already exists, or it is not necessary.
-#If Hoeijmakers2018a exists but Hoeijmakers2018 doesn't, this code will add you Hoeijmakers2018.
-#Its up to you to manage your bibtex file properly.
-if path.isfile(outbib):
-    print(outbib+' exists. The reference will be appended.')
-    with open(outbib) as fp:
-        content=fp.readlines()
-    i=0
-    outname=target_ref_name+suffix[i]
-    bibtext_out = bibtext[art_i:-1].replace(ref_name,outname)
-
-    #The following block tests if the reference already exists, and if so, appends a suffix.
-    while '@ARTICLE{'+outname+',\n' in content:
-        print('   '+outname+' already existed.')
-        i+=1
-        if i > len(suffix)-1:
-            print('ERROR: Too many references called '+target_ref_name+' already present in the bibfile.')
-            print('Please go add this reference manually:')
-            print(bibtext[art_i:-1].replace(ref_name,target_ref_name))
+#First do the checks on the input...
+for number in input:
+    if number.isdigit() == False:
+        print('Error, please provide only numbers. Exiting.')
+        sys.exit()
+    if int(number) >= len(bibcode_list):
+        print('Error, that many reference were not returned.')
+        sys.exit()
+#...Then the actual functionality.
+for number in input:
+    target_ref_name = surname+dates_list[int(number)].split('/')[-1]
+    bibcode = bibcode_list[int(number)]#'2019A&A...627A.165H'
+    bibtex_root = 'http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode='
+    bibtex_tail = '&data_type=BIBTEX'
+    bibtex_url = bibtex_root+bibcode+bibtex_tail
+    bibtext = BS(requests.get(bibtex_url).content,'html.parser').prettify()
+    #This is a string.
+    art_key = '@ARTICLE{'
+    try:
+        art_i = bibtext.index(art_key)#Search for where @ARTICLE STARTS. This is the start of our reference.
+    except:
+        art_key = '@INPROCEEDINGS{'
+        art_i = bibtext.index(art_key)
+    ref_name = bibtext[art_i:-1].replace(art_key,'').split(',')[0]#Split before the first comma and remove the @ARTICLE{
+    #to retrieve the name of the reference.
+    suffix=['','b','c','d','e','f','g','h','i','j','k']#These are the possible suffixes that can be added to the reference to distinguish it from
+    #duplicate references, e.g. Hoeijmakers2018 exists? Then we add Hoeijmakers2018b.
+    #The first one is reserved for the existing reference. Hoeijmakers2018a is never added by this program.
+    #It either already exists, or it is not necessary.
+    #If Hoeijmakers2018a exists but Hoeijmakers2018 doesn't, this code will add you Hoeijmakers2018.
+    #Its up to you to manage your bibtex file properly.
+    if path.isfile(outbib):
+        print(outbib+' exists. The reference will be appended.')
+        with open(outbib) as fp:
+            content=fp.readlines()
+        i=0
         outname=target_ref_name+suffix[i]
-        print('   Changing to '+outname)
         bibtext_out = bibtext[art_i:-1].replace(ref_name,outname)
+        #The following block tests if the reference already exists, and if so, appends a suffix.
+        while art_key+outname+',\n' in content:
+            print('   '+outname+' already existed.')
+            i+=1
+            if i > len(suffix)-1:
+                print('ERROR: Too many references called '+target_ref_name+' already present in the bibfile.')
+                print('Please go add this reference manually:')
+                print(bibtext[art_i:-1].replace(ref_name,target_ref_name))
+            outname=target_ref_name+suffix[i]
+            print('   Changing to '+outname)
+            bibtext_out = bibtext[art_i:-1].replace(ref_name,outname)
+        with open(outbib, 'a') as fp:
+            fp.write('\n')
+            fp.write(bibtext_out)
+            fp.write('\n')
+        print('Added reference '+outname+' to '+outbib)
+    else:
+        bibtext_out = bibtext[art_i:-1].replace(ref_name,target_ref_name)
+        with open(outbib,'w') as fp:
+            fp.write('\n')
+            fp.write(bibtext_out)
+            fp.write('\n')
+        print('Created new '+outbib+' file and added '+target_ref_name)
 
-
-    with open(outbib, 'a') as fp:
-        fp.write('\n')
-        fp.write(bibtext_out)
-        fp.write('\n')
-    print('Added reference '+outname+' to '+outbib)
-else:
-    bibtext_out = bibtext[art_i:-1].replace(ref_name,target_ref_name)
-    with open(outbib,'w') as fp:
-        fp.write('\n')
-        fp.write(bibtext_out)
-        fp.write('\n')
-    print('Created new '+outbib+' file and added '+target_ref_name)
-
-print('Finished')
 
 #TO ADD:
 #THE ABILITY TO DEAL WITH MULTIPLE REFERENCES AT ONCE.
