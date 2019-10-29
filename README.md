@@ -9,7 +9,7 @@ and would typically navigate to http://adsabs.net fill in the query form by prov
 like ^Hoeijmakers, optionally add a start or an and end year to the search window, press earch and then need to navigate
 to the appropriate paper, and click some more to generate a bibtex reference to finally copy-aste that into a bib.file
 on their drive. Well, I certainly got tired of doing that 50 times in a row each time I'm riting a paper, so these to scripts
-take the clicking and browsing away from me. It's extra convenient when you are calling aTeX from the terminal, because you
+take the clicking and browsing away from me. It's extra convenient when you are calling LaTeX from the terminal, because you
 will already have a terminal window open with a bib file nearby.
 
 If you want to retrieve a bibtex reference and write it to a bibfile real quick, use etbib.py.
