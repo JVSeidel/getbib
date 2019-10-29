@@ -8,6 +8,7 @@ except:
 import sys
 import pdb
 import os.path as path
+import lib.utils as ut
 
 
 #==================================================================
@@ -16,14 +17,21 @@ import os.path as path
 #This script is a quick-hand way to query the ads system for
 #bibtex references.
 #It is called from the command line outside of python as:
-#python3 getbib.py [authorname] [startyear] [endyear] [optional: path to bibfile (bib.bib by default)]
-#Example:
-#python3 getbib.py Hoeijmakers 2003 2021 ~/Documents/paper/references.bib
+#python3 getbib.py [authorname] [optional: startyear] [optional: endyear] [optional: path to bibfile (bib.bib by default)]
+#Examples:
+#python3 getbib.py Hoeijmakers'
+#python3 getbib.py Hoeijmakers 2012'
+#python3 getbib.py Hoeijmakers 2012 ~/Documents/paper/references.bib'
+#python3 getbib.py Hoeijmakers 2012 2019 ~/Documents/paper/references.bib'
+#python3 getbib.py Hoeijmakers ~/Documents/paper/references.bib'
+#These examples will query the ads for all references with Hoeijmakers as first author,
+#with or without a selection of the time frame between the years 2012 and 2019.
+
+#Note that the first numeral is always assumed to be the start year.
+#Providing only the endyear is not possible.
+
 #The script understands initials in a similar way as the ADS query system does, as follows:
 #python3 getbib.py Hoeijmakers,H.J. 2003 2031 ~/Documents/paper/references.bib
-
-#These examples will query the ads for all references with Hoeijmakers as first author,
-#between the years 2003 and 2021.
 
 #The script will return all the references found, and allow the user to select one
 #or multiple references (separated by comma's), which are to be added to the specified
@@ -41,45 +49,16 @@ import os.path as path
 
 
 
-
-def input_error():
-    print('      Call this function with author surname, start year and end year respectively.')
-    print('      For example:')
-    print('      >>>python3 getbib.py Hoeijmakers 2003 2021')
-    print('      Providing a path to a bibfile is optional (if not provided, defaults to bib.bib)')
-    print('      For example:')
-    print('      >>>python3 getbib.py Hoeijmakers 2003 2021 ~/Documents/paper/references.bib')
-    sys.exit()
-
-#First we check the input for completeness:
-if len(sys.argv) < 4 :
-    print('Input error: Insufficient arguments provided.')
-    input_error()
-
-surname = sys.argv[1].capitalize().replace(',','%2C+')
-startyear = sys.argv[2]
-endyear = sys.argv[3]
-
-
-if startyear.isdigit() == False or endyear.isdigit() == False:
-    print('   Input error: Start and end year should be numbers.')
-    input_error()
-
-if len(sys.argv) > 4:
-    outbib = sys.argv[4]
-else:
-    outbib = 'bib.bib'
-
-
-
+#First we check the input for completeness and extract the right strings:
+surname,startyear,endyear,outbib = ut.parse_input(sys.argv)
 #Then we start constructing the URL needed to access ADS.
-root = 'http://adsabs.net/cgi-bin/nph-abs_connect?db_key=AST&aut_logic=OR&'
-author = 'author=%5E'+surname
-start = '&start_mon=&start_year='+str(startyear)
-end = '&end_mon=&end_year='+str(endyear)
-tail = '&ttl_logic=OR&title=&txt_logic=OR&text=&nr_to_return=2000&start_nr=1&sort=NDATE&jou_pick=ALL'
-
-url = root + author + start + end + tail
+url = ut.create_ads_url(surname,startyear,endyear)
+# root = 'http://adsabs.net/cgi-bin/nph-abs_connect?db_key=AST&aut_logic=OR&'
+# author = 'author=%5E'+surname
+# start = '&start_mon=&start_year='+str(startyear)
+# end = '&end_mon=&end_year='+str(endyear)
+# tail = '&ttl_logic=OR&title=&txt_logic=OR&text=&nr_to_return=2000&start_nr=1&sort=NDATE&jou_pick=ALL'
+# url = root + author + start + end + tail
 
 #Execute the actual query.
 ads_html = BS(requests.get(url).content,'html.parser')
