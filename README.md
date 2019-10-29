@@ -1,3 +1,6 @@
+getbib.py and searchads.py
+==========================
+
 This repo contains two scripts that provide a quick-hand way to query the ads system for stronomy papers and
 bibtex references.
 
@@ -47,4 +50,3 @@ e.g. Hoeijmakers2018 would become Hoeijmakers2018b.
 
 If this way of returning references is every altered by ADS, this code will probably fail
 to parse the html table properly.
-==================================================================
