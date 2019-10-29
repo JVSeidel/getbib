@@ -1,19 +1,19 @@
 getbib.py and searchads.py
 ==========================
 
-This repo contains two scripts that provide a quick-hand way to query the ads system for stronomy papers and
+This repo contains two scripts that provide a quick-hand way to query the ads system for astronomy papers and
 bibtex references.
 
 This helps people who know the papers they want to get from the ADS
-and would typically navigate to http://adsabs.net fill in the query form by providing the urname of the first author
-like ^Hoeijmakers, optionally add a start or an and end year to the search window, press earch and then need to navigate
-to the appropriate paper, and click some more to generate a bibtex reference to finally copy-aste that into a bib.file
-on their drive. Well, I certainly got tired of doing that 50 times in a row each time I'm riting a paper, so these to scripts
+and would typically navigate to http://adsabs.net fill in the query form by providing the surname of the first author
+like ^Hoeijmakers, optionally add a start or an and end year to the search window, press search and then need to navigate
+to the appropriate paper, and click some more to generate a bibtex reference to finally copy-paste that into a bib.file
+on their drive. Well, I certainly got tired of doing that 50 times in a row each time I'm writing a paper, so these two scripts
 take the clicking and browsing away from me. It's extra convenient when you are calling LaTeX from the terminal, because you
 will already have a terminal window open with a bib file nearby.
 
-If you want to retrieve a bibtex reference and write it to a bibfile real quick, use etbib.py.
-If you simply want to search the classical ADS (using the adsabs.net fork) to look up a aper, use searchads.py.
+If you want to retrieve a bibtex reference and write it to a bibfile real quick, use getbib.py.
+If you simply want to search the classical ADS (using the adsabs.net fork) to look up a paper, use searchads.py.
 
 The input for both of these works identical:<br>
 Each script is called from the command line (in bash, outside of python) as:<br>
