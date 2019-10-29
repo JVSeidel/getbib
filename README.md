@@ -15,26 +15,26 @@ will already have a terminal window open with a bib file nearby.
 If you want to retrieve a bibtex reference and write it to a bibfile real quick, use etbib.py.
 If you simply want to search the classical ADS (using the adsabs.net fork) to look up a aper, use searchads.py.
 
-The input for both of these works identical:
-Each script is called from the command line (in bash, outside of python) as:
-python3 getbib.py [authorname] [optional: startyear] [optional: endyear] [optional: path to ibfile (bib.bib by default)]
-Examples:
-python3 getbib.py Hoeijmakers'
-python3 getbib.py Hoeijmakers 2012'
-python3 getbib.py Hoeijmakers 2012 ~/Documents/paper/references.bib'
-python3 getbib.py Hoeijmakers 2012 2019 ~/Documents/paper/references.bib'
-python3 getbib.py Hoeijmakers ~/Documents/paper/references.bib'
+The input for both of these works identical:<br>
+Each script is called from the command line (in bash, outside of python) as:<br>
+*python3 getbib.py [authorname] [optional: startyear] [optional: endyear] [optional: path to ibfile (bib.bib by default)]*<br>
+Examples:<br>
+*python3 getbib.py Hoeijmakers*<br>
+*python3 getbib.py Hoeijmakers 2012*<br>
+*python3 getbib.py Hoeijmakers 2012 ~/Documents/paper/references.bib*<br>
+*python3 getbib.py Hoeijmakers 2012 2019 ~/Documents/paper/references.bib*<br>
+*python3 getbib.py Hoeijmakers ~/Documents/paper/references.bib*<br>
 These examples will query the ads for all references with Hoeijmakers as first author,
 with or without a selection of the time frame between the years 2012 and 2019.
 
-Swap getbib.py with searchads.py if you simply want to search for the references in the rowser, e.g.:
-python3 searchads.py Hoeijmakers 2012'
+Swap getbib.py with searchads.py if you simply want to search for the references in the rowser, e.g.:<br>
+*python3 searchads.py Hoeijmakers 2012*<br>
 
 Note that the first numeral is always assumed to be the start year.
 Providing only the endyear is not possible.
 
-The script understands initials in a similar way as the ADS query system does, as follows:
-python3 getbib.py Hoeijmakers,H.J. 2003 2031 ~/Documents/paper/references.bib
+The script understands initials in a similar way as the ADS query system does, as follows:<br>
+*python3 getbib.py Hoeijmakers,H.J. 2003 2031 ~/Documents/paper/references.bib*
 Careful: No spaces between the surname, the comma and the initials.
 Python understands spaces to delimit different input variables.
 
@@ -48,5 +48,5 @@ a bibtex reference it is trying to add is already in the bib file. In that case,
 it will append a lower-case letter to the name of the reference, stating with b.
 e.g. Hoeijmakers2018 would become Hoeijmakers2018b.
 
-If this way of returning references is every altered by ADS, this code will probably fail
-to parse the html table properly.
+If this way of querying or returning references is ever altered by ADS, this code will probably fail
+to submit the query or parse the resulting html table properly.
