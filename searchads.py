@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 try:
     import requests
     from bs4 import BeautifulSoup as BS

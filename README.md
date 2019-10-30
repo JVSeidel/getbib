@@ -55,6 +55,21 @@ naming becomes inconvenient for you. Manual interaction with your bibfile may th
 still be needed. I may add a certain functionality that orders a bibfile alphabetically
 in the future.<br>
 
+**Make it even easier**<br>
+...by adding these scripts to your PATH, allowing you to execute them from the
+command line from anywhere.<br>
+The shebang lines (*#!/usr/bin/env python3*) are already in place, but you may need to customise them for your needs. (The *python3* in this case refers to the alias for your python 3 installation. Call *which python3* to find out the path where the executable is located).<br><br>
+To add these scripts to your path:<br>
+-Place them (along with the lib folder) in a central directory where you keep the custom routines that you added to your path.<br>
+-Make them executable by running *chmod +x getbib.py* and *chmod +x searchads.py*<br>
+-Remove the file extension .py for bonus points.<br>
+-Open your bash profile located in *~/.bash_profile* or *~/.bashrc* or *~/.zshrc*<br>
+-Add the following line at the bottom: *export PYTHON_UTILS="/home/username/wherever_these_codes_are"*, with the correct file path.<br>
+-Add the following line: *export PATH="$PYTHON_UTILS:$PATH"*<br>
+<br>
+Now you should be able to run getbib and searchads from a terminal anywhere, without first needing to call *python3* and without the extension *.py* (if you removed it).<br>
+For example, *hoeijmakers$ searchads Hoeijmakers 2012* is now a working command on my system.<br>
+
 **Disclaimer**<br>
 If this way of querying or returning references is ever altered by ADS, this code will probably fail to submit the query or parse the resulting html table properly. I take no responsibility
 for irreparably damaging your bibfile.
