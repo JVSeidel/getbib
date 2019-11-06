@@ -94,7 +94,11 @@ for i in range(len(bibcode_list)):
     outstring = ''
     for j in range(min([3,len(authors)])):#Print up to three co-authors.
         outstring+=authors[j]+';'
-    print(str(i)+')    '+dates_list[i]+'    '+outstring[0:-2]+' et al.')
+    outstring_total = str(i)+')    '+dates_list[i]+'    '+outstring[0:-2]
+    if len(authors) <= 3:
+        print(outstring_total)
+    else:
+        print(outstring_total+' et al.')
     #the 0:-2 indexing is to get rid of the last trailing ; that was added, and replace it with et al.
     print('       '+titles_list[i])
     print('')
@@ -114,7 +118,7 @@ for number in input:
         sys.exit()
 #...Then the actual functionality.
 for number in input:
-    target_ref_name = surname.split('%2C+')[0]+dates_list[int(number)].split('/')[-1]
+    target_ref_name = surname.split('%2C+')[0].replace('+','')+dates_list[int(number)].split('/')[-1]
     bibcode = bibcode_list[int(number)]#'2019A&A...627A.165H'
     # bibtex_root = 'http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode='
     bibtex_root = 'https://ui.adsabs.harvard.edu/abs/'
