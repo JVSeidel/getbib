@@ -34,8 +34,10 @@ Note that the first numeral is always assumed to be the start year.
 Providing only the endyear is not possible.
 
 The script understands initials in a similar way as the ADS query system does, as follows:<br>
-*python3 getbib.py Hoeijmakers,H.J. 2003 2031 ~/Documents/paper/references.bib*
-Careful: No spaces between the surname, the comma and the initials.
+*python3 getbib.py Hoeijmakers,H.J. 2003 2031 ~/Documents/paper/references.bib*<br>
+Similarly, the script understands compounded surnames if the parts are separated with an underscore, as follows:<br>
+*python3 getbib.py de_Mooij,E. 2003 2031 ~/Documents/paper/references.bib*<br>
+Careful: No spaces between the parts of the surname, the comma and the initials.
 Python understands spaces to delimit different input variables.
 The following will return an error:<br>
 *python3 getbib.py Hoeijmakers, H.J. 2003 2031 ~/Documents/paper/references.bib*<br>

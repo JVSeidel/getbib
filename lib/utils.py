@@ -29,7 +29,7 @@ def parse_input(arguments):
     if arguments[1].isdigit():
         print('Input error: The first argument should be a name (not a number).')
         input_error()
-    surname = arguments[1].capitalize().replace(',','%2C+')
+    surname = arguments[1].capitalize().replace(',','%2C+').replace('_','+')
     startyear = '1'
     endyear = '9999'#If ADS remains unchanged for the next 8000 years this will be a problem.
     outbib = 'bib.bib'

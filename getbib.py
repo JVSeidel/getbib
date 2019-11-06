@@ -94,7 +94,11 @@ for i in range(len(bibcode_list)):
     outstring = ''
     for j in range(min([3,len(authors)])):#Print up to three co-authors.
         outstring+=authors[j]+';'
-    print(str(i)+')    '+dates_list[i]+'    '+outstring[0:-2]+' et al.')
+    outstring_total = str(i)+')    '+dates_list[i]+'    '+outstring[0:-2]
+    if len(authors) <= 3:
+        print(outstring_total)
+    else:
+        print(outstring_total+' et al.')
     #the 0:-2 indexing is to get rid of the last trailing ; that was added, and replace it with et al.
     print('       '+titles_list[i])
     print('')
@@ -114,13 +118,19 @@ for number in input:
         sys.exit()
 #...Then the actual functionality.
 for number in input:
-    target_ref_name = surname.split('%2C+')[0]+dates_list[int(number)].split('/')[-1]
+    target_ref_name = surname.split('%2C+')[0].replace('+','')+dates_list[int(number)].split('/')[-1]
     bibcode = bibcode_list[int(number)]#'2019A&A...627A.165H'
-    bibtex_root = 'http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode='
-    bibtex_tail = '&data_type=BIBTEX'
+    # bibtex_root = 'http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode='
+    bibtex_root = 'https://ui.adsabs.harvard.edu/abs/'
+    # bibtex_tail = '&data_type=BIBTEX'
+    bibtex_tail = '/exportcitation'
     bibtex_url = bibtex_root+bibcode+bibtex_tail
-    bibtext = BS(requests.get(bibtex_url).content,'html.parser').prettify()#This is a big string wth line breaks.
-
+    # bibtext = BS(requests.get(bibtex_url).content,'html.parser').prettify()#This is a big string wth line breaks.
+    bibtext=BS(requests.get(bibtex_url).content,'html.parser').find('textarea',attrs={'class':"export-textarea form-control"}).text
+    # print(textarea)
+# <textarea class="export-textarea form-control" readonly="">
+# https://ui.adsabs.harvard.edu/abs/2019ESS.....432619S/exportcitation
+    # pdb.set_trace()
     art_key = '@ARTICLE{'
     try:
         art_i = bibtext.index(art_key)#Search for where @ARTICLE STARTS. This is the start of our reference.
@@ -149,10 +159,12 @@ for number in input:
         with open(outbib) as fp:
             content=fp.readlines()
         i=0
+        for l in range(len(content)):
+            content[l]=content[l].replace('@ARTICLE{','').replace('@MISC{','').replace('@INPROCEEDINGS{','')
         outname=target_ref_name+suffix[i]
         bibtext_out = bibtext[art_i:-1].replace(ref_name,outname)#Swap the garbled name for the intelligble name.
         #The following block tests if the reference already exists, and if so, swaps for a suffixed-version of the name instead.
-        while art_key+outname+',\n' in content:
+        while outname+',\n' in content:
             print('   '+outname+' already existed.')
             i+=1
             if i > len(suffix)-1:
